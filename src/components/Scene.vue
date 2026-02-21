@@ -2,12 +2,10 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import VDUI_3D from "../lib";
 import { convertColorToHex, lightenHexColor } from "@/lib/color-utils";
+import { useVdui3dControls } from "@/composables/use3dControls";
 
 const svgRef = ref(null);
 const isDebug = ref(true);
-
-const cameraDistance = ref(400);
-const cameraPan = ref({ x: 100, y: -60, z: -60 });
 
 const settings = ref({
     width: 800,
@@ -17,28 +15,18 @@ const settings = ref({
     far: 300
 });
 
-const rotationX = ref(-30);
-const rotationY = ref(60);
+const { cameraDistance, cameraPan, rotationX, rotationY, eye, target, up, lightDir, lightCircleCenter, lightCircleRadius, lightCircleDot, onMouseDown, onWheel, onLightPointerDown } = useVdui3dControls({
+    svgRef,
+    settings,
+    VDUI_3D
+})
+
 
 const gridGap = 1;
 const gridPaddingCells = ref(1); // extra empty cells around cubes
 
-const eye = computed(() => ({
-    x: cameraPan.value.x,
-    y: 25 + cameraPan.value.y,
-    z: -cameraDistance.value + cameraPan.value.z
-}));
-
 const baseTarget = { x: 0, y: 10, z: 0 };
-const target = computed(() => ({
-    x: baseTarget.x + cameraPan.value.x,
-    y: baseTarget.y + cameraPan.value.y,
-    z: baseTarget.z + cameraPan.value.z
-}));
 
-const up = { x: 0, y: 1, z: 0 };
-
-const lightDir = ref(VDUI_3D.Vec3.normalize({ x: 1, y: 2, z: 2 }));
 
 function makeWeek(col, rowStart) {
     const w = [];
@@ -366,17 +354,6 @@ const allFaces = computed(() => {
     return faces;
 });
 
-
-const lightCircleCenter = computed(() => ({
-    x: settings.value.width - 100,
-    y: 100
-}));
-const lightCircleRadius = 60;
-
-const lightCircleDot = computed(() =>
-    VDUI_3D.lightDirToCircleCoords(lightDir.value, lightCircleCenter.value, lightCircleRadius)
-);
-
 let isDragging = false;
 let isPanning = false;
 let isLightDragging = false;
@@ -417,27 +394,6 @@ function updateLightFromPointerEvent(e) {
     lightDir.value = VDUI_3D.Vec3.normalize({ x: normalizedX, y: normalizedY, z: normalizedZ });
 }
 
-function onLightPointerDown(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    isLightDragging = true;
-    isDragging = false;
-    isPanning = false;
-
-    updateLightFromPointerEvent(e);
-}
-
-function onLightPointerMove(e) {
-    if (!isLightDragging) return;
-    e.preventDefault();
-    updateLightFromPointerEvent(e);
-}
-
-function onLightPointerUp() {
-    isLightDragging = false;
-}
-
 function worldUnitsPerPixel() {
     const fovRad = (settings.value.fov * Math.PI) / 180;
     const viewportWorldHeight = 2 * cameraDistance.value * Math.tan(fovRad / 2);
@@ -458,98 +414,9 @@ function panFromMouseDelta(dx, dy) {
     };
 }
 
-function onMouseDown(e) {
-    if (isLightDragging) return;
-
-    if (e.button === 2 || e.button === 1) {
-        isPanning = true;
-        isDragging = false;
-        lastX = e.clientX;
-        lastY = e.clientY;
-        return;
-    }
-
-    isDragging = true;
-    isPanning = false;
-
-    lastX = e.clientX;
-    lastY = e.clientY;
-}
-
-function onMouseMove(e) {
-    if (isLightDragging) return;
-
-    if (isPanning) {
-        const dx = e.clientX - lastX;
-        const dy = e.clientY - lastY;
-        lastX = e.clientX;
-        lastY = e.clientY;
-
-        panFromMouseDelta(dx, dy);
-        return;
-    }
-
-    if (!isDragging) return;
-
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-
-    lastX = e.clientX;
-    lastY = e.clientY;
-
-    rotationY.value -= dx * 0.5;
-    rotationX.value -= dy * 0.5;
-
-    if (rotationX.value > 89) rotationX.value = 89;
-    if (rotationX.value < -89) rotationX.value = -89;
-}
-
-function onMouseUp() {
-    isDragging = false;
-    isPanning = false;
-    isLightDragging = false;
-}
-
-function onWheel(e) {
-    e.preventDefault();
-
-    const minDistance = 20;
-    const maxDistance = 1200;
-
-    const direction = e.deltaY > 0 ? 1 : -1;
-
-    const baseStep = 6;
-    const scaledStep = Math.max(baseStep, cameraDistance.value * 0.04);
-
-    cameraDistance.value = Math.max(
-        minDistance,
-        Math.min(maxDistance, cameraDistance.value + direction * scaledStep)
-    );
-}
-
 function formatLabel(value, rounding = 0, suffix = "") {
     return `${value >= 0 ? "+" : ""}${value.toFixed(rounding)}${suffix}`;
 }
-
-onMounted(() => {
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("mouseleave", onMouseUp);
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
-
-    window.addEventListener("mousemove", onLightPointerMove, { passive: false });
-    window.addEventListener("mouseup", onLightPointerUp);
-    window.addEventListener("mouseleave", onLightPointerUp);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener("mouseup", onMouseUp);
-    window.removeEventListener("mouseleave", onMouseUp);
-    window.removeEventListener("mousemove", onMouseMove);
-
-    window.removeEventListener("mousemove", onLightPointerMove);
-    window.removeEventListener("mouseup", onLightPointerUp);
-    window.removeEventListener("mouseleave", onLightPointerUp);
-});
 </script>
 
 <template>
