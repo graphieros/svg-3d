@@ -2,10 +2,10 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 export function useVdui3dControls({ svgRef, settings, VDUI_3D }) {
     const cameraDistance = ref(400);
-    const cameraPan = ref({ x: 100, y: -60, z: -60 });
+    const cameraPan = ref({ x: 152, y: -60, z: 79 });
 
-    const rotationX = ref(-30);
-    const rotationY = ref(60);
+    const rotationX = ref(-25.5);
+    const rotationY = ref(42);
 
     const baseTarget = { x: 0, y: 10, z: 0 };
     const up = { x: 0, y: 1, z: 0 };

@@ -428,3 +428,53 @@ export function convertOklchToRgb(lightness, chroma, hueDegrees) {
     const labB = chroma * Math.sin(hueRadians);
     return convertOklabToSrgb(lightness, labA, labB);
 }
+
+// OKLCH utility
+export function convertOklabToSrgb(lightness, labA, labB) {
+    const lPrime = lightness + 0.3963377774 * labA + 0.2158037573 * labB;
+    const mPrime = lightness - 0.1055613458 * labA - 0.0638541728 * labB;
+    const sPrime = lightness - 0.0894841775 * labA - 1.291485548 * labB;
+    const lCube = lPrime * lPrime * lPrime;
+    const mCube = mPrime * mPrime * mPrime;
+    const sCube = sPrime * sPrime * sPrime;
+    let redLinear =
+        +4.0767416621 * lCube - 3.3077115913 * mCube + 0.2309699292 * sCube;
+    let greenLinear =
+        -1.2684380046 * lCube + 2.6097574011 * mCube - 0.3413193965 * sCube;
+    let blueLinear =
+        -0.0041960863 * lCube - 0.7034186147 * mCube + 1.707614701 * sCube;
+    redLinear = clampToUnitInterval(redLinear);
+    greenLinear = clampToUnitInterval(greenLinear);
+    blueLinear = clampToUnitInterval(blueLinear);
+    const red = srgbEncodeFromLinear(redLinear) * 255;
+    const green = srgbEncodeFromLinear(greenLinear) * 255;
+    const blue = srgbEncodeFromLinear(blueLinear) * 255;
+    return [clampToByte(red), clampToByte(green), clampToByte(blue)];
+}
+
+export function colorFromValueWithMax({
+    value,
+    maxValue,
+    baseColor,
+    minimumLighten = 0.8,
+    exponent = 1.1
+}) {
+    const numericValue = Number(value);
+    const numericMax = Number(maxValue);
+
+    if (!Number.isFinite(numericValue) || !Number.isFinite(numericMax) || numericMax <= 0) {
+        return convertColorToHex(baseColor);
+    }
+
+    const normalized = clampToUnitInterval(numericValue / numericMax); // 0..1
+    const inverted = 1 - normalized;
+    const eased = Math.pow(inverted, exponent);
+
+    const lightenAmount = clampToUnitInterval(minimumLighten * eased);
+
+    const baseHexWithAlpha = convertColorToHex(baseColor);
+    if (typeof baseHexWithAlpha !== "string") return baseHexWithAlpha;
+
+    const baseHex = baseHexWithAlpha.slice(0, 7);
+    return lightenHexColor(baseHex, lightenAmount);
+}

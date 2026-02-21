@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import VDUI_3D from "../lib";
-import { convertColorToHex, lightenHexColor } from "@/lib/color-utils";
+import { convertColorToHex, lightenHexColor, colorFromValueWithMax } from "@/lib/color-utils";
 import { useVdui3dControls } from "@/composables/use3dControls";
 
 const svgRef = ref(null);
@@ -27,18 +27,25 @@ const gridPaddingCells = ref(1); // extra empty cells around cubes
 
 const baseTarget = { x: 0, y: 10, z: 0 };
 
+function makeWeek(col, rowStart, { maxValue = 20, baseColor = "#4caf50" } = {}) {
+    const week = [];
 
-function makeWeek(col, rowStart) {
-    const w = [];
     for (let i = 0; i < 7; i += 1) {
-        w.push({
-            value: Math.random() * 20,
-            color: "#4caf50",
+        week.push({
+            value: Math.random() * maxValue,
             col,
             row: rowStart + i
         });
     }
-    return w;
+
+    return week.map((item) => ({
+        ...item,
+        color: colorFromValueWithMax({
+            value: item.value,
+            maxValue,
+            baseColor
+        })
+    }));
 }
 
 function makeGraph(weeks, colStart) {
