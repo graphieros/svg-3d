@@ -15,7 +15,24 @@ const settings = ref({
     far: 300
 });
 
-const { cameraDistance, cameraPan, rotationX, rotationY, eye, target, up, lightDir, lightCircleCenter, lightCircleRadius, lightCircleDot, onMouseDown, onWheel, onLightPointerDown } = useVdui3dControls({
+const { 
+    cameraDistance, 
+    cameraPan, 
+    rotationX, 
+    rotationY, 
+    eye, 
+    target, 
+    up, 
+    lightDir,
+    areSettingsChanged,
+    lightCircleCenter, 
+    lightCircleRadius, 
+    lightCircleDot, 
+    onMouseDown, 
+    onWheel, 
+    onLightPointerDown, 
+    resetSettings,
+} = useVdui3dControls({
     svgRef,
     settings,
     VDUI_3D
@@ -362,6 +379,12 @@ function formatLabel(value, rounding = 0, suffix = "") {
 
 <template>
     <div class="wrapper">
+        <button 
+            @click="resetSettings"
+            :disabled="!areSettingsChanged"
+        >
+            RESET SETTINGS
+        </button>
         <svg
             width="100%"
             :viewBox="`0 0 ${settings.width} ${settings.height}`"
@@ -494,5 +517,20 @@ svg:active {
 }
 text {
     font-variant-numeric: tabular-nums;
+}
+
+button {
+    background-color: #2A2A2A;
+    border: none;
+    padding: 0.618rem;
+    color: #CCCCCC;
+    transition: background-color 0.2s;
+}
+button:hover {
+    background-color: #3A3A3A;
+}
+button:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
 }
 </style>

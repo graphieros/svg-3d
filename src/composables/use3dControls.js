@@ -1,11 +1,42 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 export function useVdui3dControls({ svgRef, settings, VDUI_3D }) {
-    const cameraDistance = ref(400);
-    const cameraPan = ref({ x: 152, y: -60, z: 79 });
+    const defaultSettings = {
+        cameraDistance: 400,
+        cameraPan: { x: 152, y: -60, z: 79 },
+        lightDir: { x: -0.7, y: 0.7, z: 0 },
+        rotationX: -16.5,
+        rotationY: 50.5
+    }
 
-    const rotationX = ref(-25.5);
-    const rotationY = ref(42);
+    const cameraDistance = ref(defaultSettings.cameraDistance);
+    const cameraPan = ref(defaultSettings.cameraPan);
+    const lightDir = ref(VDUI_3D.Vec3.normalize(defaultSettings.lightDir));
+    const rotationX = ref(defaultSettings.rotationX);
+    const rotationY = ref(defaultSettings.rotationY);
+
+    function resetSettings() {
+        cameraDistance.value = defaultSettings.cameraDistance;
+        cameraPan.value = defaultSettings.cameraPan;
+        lightDir.value = VDUI_3D.Vec3.normalize(defaultSettings.lightDir);
+        rotationX.value = defaultSettings.rotationX;
+        rotationY.value = defaultSettings.rotationY;
+    }
+
+    const areSettingsChanged = computed(() => {
+
+        const _lightDirDefault = VDUI_3D.Vec3.normalize(defaultSettings.lightDir)
+
+        return cameraDistance.value !== defaultSettings.cameraDistance
+            || cameraPan.value.x !== defaultSettings.cameraPan.x
+            || cameraPan.value.y !== defaultSettings.cameraPan.y
+            || cameraPan.value.z !== defaultSettings.cameraPan.z
+            || lightDir.value.x !== _lightDirDefault.x
+            || lightDir.value.y !== _lightDirDefault.y
+            || lightDir.value.z !== _lightDirDefault.z
+            || rotationX.value !== defaultSettings.rotationX
+            || rotationY.value !== defaultSettings.rotationY
+    })
 
     const baseTarget = { x: 0, y: 10, z: 0 };
     const up = { x: 0, y: 1, z: 0 };
@@ -21,8 +52,6 @@ export function useVdui3dControls({ svgRef, settings, VDUI_3D }) {
         y: baseTarget.y + cameraPan.value.y,
         z: baseTarget.z + cameraPan.value.z,
     }));
-
-    const lightDir = ref(VDUI_3D.Vec3.normalize({ x: -0.7, y: 0.7, z: 0 }));
 
     const lightCircleCenter = computed(() => ({
         x: settings.value.width - 100,
@@ -215,6 +244,7 @@ export function useVdui3dControls({ svgRef, settings, VDUI_3D }) {
         target,
         up,
         lightDir,
+        areSettingsChanged,
 
         // light
         lightCircleCenter,
@@ -225,5 +255,8 @@ export function useVdui3dControls({ svgRef, settings, VDUI_3D }) {
         onMouseDown,
         onWheel,
         onLightPointerDown,
+        
+        // actions
+        resetSettings
     };
 }
