@@ -424,6 +424,8 @@ function panFromMouseDelta(dx, dy) {
 function formatLabel(value, rounding = 0, suffix = "") {
     return `${value >= 0 ? "+" : ""}${value.toFixed(rounding)}${suffix}`;
 }
+
+console.log(allFaces.value)
 </script>
 
 <template>

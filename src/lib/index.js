@@ -341,7 +341,7 @@ VDUI_3D.createCubeFaces = function ({ model, cubeFaces, cubeVertices, width, hei
             })
         );
 
-        const pointsStr = projectedVertices.map((p) => `${p.x},${p.y}`).join(" ");
+        const pointsStr = projectedVertices.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
 
         const depths = projectedVertices.map((p) => p.depth);
 
