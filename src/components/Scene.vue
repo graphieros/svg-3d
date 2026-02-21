@@ -361,10 +361,10 @@ function formatLabel(value, rounding = 0, suffix = "") {
 </script>
 
 <template>
-    <div style="display: inline-block; background: #111; padding: 16px;">
+    <div class="wrapper">
         <svg
-            :width="settings.width"
-            :height="settings.height"
+            width="100%"
+            :viewBox="`0 0 ${settings.width} ${settings.height}`"
             ref="svgRef"
             style="overflow: hidden"
             @mousedown="onMouseDown"
@@ -477,6 +477,11 @@ function formatLabel(value, rounding = 0, suffix = "") {
 </template>
 
 <style scoped>
+.wrapper {
+    max-width: 999px;
+    margin: 0 auto;
+}
+
 svg {
     user-select: none;
     touch-action: none;
