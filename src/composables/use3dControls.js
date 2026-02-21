@@ -22,7 +22,7 @@ export function useVdui3dControls({ svgRef, settings, VDUI_3D }) {
         z: baseTarget.z + cameraPan.value.z,
     }));
 
-    const lightDir = ref(VDUI_3D.Vec3.normalize({ x: 1, y: 2, z: 2 }));
+    const lightDir = ref(VDUI_3D.Vec3.normalize({ x: -0.7, y: 0.7, z: 0 }));
 
     const lightCircleCenter = computed(() => ({
         x: settings.value.width - 100,
